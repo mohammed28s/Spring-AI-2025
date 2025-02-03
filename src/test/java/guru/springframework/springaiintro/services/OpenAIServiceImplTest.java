@@ -13,8 +13,8 @@ class OpenAIServiceImplTest {
     @Test
     void getAnswer(){
 
-        String answer = openAIService.getAnswer("Tell me a dad joke.");
-        System.out.println("Got the answer"+"\n");
+        String answer = openAIService.getAnswer("What are the most common types of cyber attacks?");
+        System.out.println("Got the answer: "+"\n");
         System.out.println(answer);
 
     }
