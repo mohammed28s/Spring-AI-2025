@@ -1,6 +1,7 @@
 package guru.springframework.springaiintro.services;
 
 import guru.springframework.springaiintro.model.Answer;
+import guru.springframework.springaiintro.model.GetCapitalRequest;
 import guru.springframework.springaiintro.model.Question;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -38,6 +39,10 @@ public class OpenAIServiceImpl implements OpenAIService{
     }
 
 
+    @Override
+    public Answer getCapital(GetCapitalRequest getCapitalRequest) {
+        return null;
+    }
 
     @Override
     public String getAnswer(String question) {
