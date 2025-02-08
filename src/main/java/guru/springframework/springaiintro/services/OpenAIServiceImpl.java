@@ -1,5 +1,8 @@
 package guru.springframework.springaiintro.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import guru.springframework.springaiintro.model.Answer;
 import guru.springframework.springaiintro.model.GetCapitalRequest;
 import guru.springframework.springaiintro.model.Question;
@@ -7,10 +10,10 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-
 import java.util.Map;
 
 
@@ -20,7 +23,7 @@ import java.util.Map;
 
 
 @Service
-public class OpenAIServiceImpl implements OpenAIService{
+public class OpenAIServiceImpl implements OpenAIService {
 
 
     private final ChatModel chatModel;
@@ -37,7 +40,7 @@ public class OpenAIServiceImpl implements OpenAIService{
         PromptTemplate promptTemplate = new PromptTemplate(question.question());
         Prompt prompt = promptTemplate.create();  //This is to create new question
 
-        ChatResponse response = chatModel.call(prompt);  //This is to answer thr question
+        ChatResponse response = chatModel.call(prompt);//This is to answer thr question
 
         return new Answer(response.getResult().getOutput().getContent());
     }
@@ -46,14 +49,43 @@ public class OpenAIServiceImpl implements OpenAIService{
     @Value("classpath:templates/get-capital-prompt.st")
     private Resource getCapitalPrompt;
 
+    @Value("classpath:templates/get-capital-with-info.st")
+    private Resource getCapitalWithInfo;
+
+    @Autowired
+    ObjectMapper objectMapper;
+
+    @Override
+    public Answer getCapitalWithInfo(GetCapitalRequest getCapitalRequest) {
+        PromptTemplate promptTemplate = new PromptTemplate(getCapitalWithInfo);
+        Prompt prompt = promptTemplate.create(Map.of("stateOrCountry", getCapitalRequest.stateOrCountry()));  //This is to create new question
+        ChatResponse response = chatModel.call(prompt);  //This is to answer the question
+
+
+        return new Answer(response.getResult().getOutput().getContent());
+    }
+
+
     @Override
     public Answer getCapital(GetCapitalRequest getCapitalRequest) {
         PromptTemplate promptTemplate = new PromptTemplate(getCapitalPrompt);
         Prompt prompt = promptTemplate.create(Map.of("stateOrCountry", getCapitalRequest.stateOrCountry()));  //This is to create new question
-        ChatResponse response = chatModel.call(prompt);  //This is to answer the question
+        ChatResponse response = chatModel.call(prompt); //This is to answer the question
 
-        return new Answer(response.getResult().getOutput().getContent());
+        System.out.println(response.getResult().getOutput().getContent());
+        String responseString;
+        try {
+            JsonNode jsonNode = objectMapper.readTree(response.getResult().getOutput().getContent());
+            responseString = jsonNode.get("answer").asText();
+
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        return new Answer(responseString);
+        //return new Answer(response.getResult().getOutput().getContent());
     }
+
 
     @Override
     public String getAnswer(String question) {
@@ -64,8 +96,4 @@ public class OpenAIServiceImpl implements OpenAIService{
 
         return response.getResult().getOutput().getContent();  //These three functions for getting the answer
     }
-
-
-
-
 }
