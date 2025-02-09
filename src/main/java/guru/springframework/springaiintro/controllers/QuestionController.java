@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
  *  Created by Mohammed, Spring Framework Guru
  */
 
-@RestController("/Ai")
+@RestController("/Ai")  //This is the main path 
 public class QuestionController {
 
     private final OpenAIService openAIService;
